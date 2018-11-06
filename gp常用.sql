@@ -72,7 +72,9 @@ pg_class
  c  -- 列存储AO表   
  
  --查询当前数据库有哪些AO表：
-select t2.nspname, t1.relname from pg_class t1, pg_namespace t2 where t1.relnamespace=t2.oid and relstorage in ('c', 'a');    
+select t2.nspname, t1.relname from pg_class t1, pg_namespace t2 where t1.relnamespace=t2.oid and relstorage in ('c', 'a');   
+
+--
 
 
 
