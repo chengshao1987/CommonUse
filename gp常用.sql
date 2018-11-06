@@ -74,7 +74,9 @@ pg_class
  --查询当前数据库有哪些AO表：
 select t2.nspname, t1.relname from pg_class t1, pg_namespace t2 where t1.relnamespace=t2.oid and relstorage in ('c', 'a');   
 
---test upload
-
+--查找gp的分布键
+select attname from pg_attribute 
+where attrelid='ttpai_boss_demension."OA_LOWPRICE_CARRER"'::regclass 
+and attnum in (SELECT unnest(attrnums) FROM pg_catalog.gp_distribution_policy t where localoid='ttpai_boss_demension."OA_LOWPRICE_CARRER"'::regclass);
 
 
