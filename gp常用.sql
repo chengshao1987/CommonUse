@@ -79,4 +79,13 @@ select attname from pg_attribute
 where attrelid='ttpai_boss_demension."OA_LOWPRICE_CARRER"'::regclass 
 and attnum in (SELECT unnest(attrnums) FROM pg_catalog.gp_distribution_policy t where localoid='ttpai_boss_demension."OA_LOWPRICE_CARRER"'::regclass);
 
+--age函数 减去参数，生成一个使用年、月的"符号化"的结果
+age('2001-04-10', timestamp '1957-06-13')  --43 years 9 mons 27 days
+
+
+--计算时间差天数
+select extract(day FROM (age('2017-12-10'::date , '2017-12-01'::date)));
+
+--计算时间差秒数
+select extract(epoch FROM (now() - (now()-interval '1 day') ));
 
