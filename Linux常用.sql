@@ -154,4 +154,7 @@ cat /proc/cpuinfo |grep MHz|uniq
    --解压文件
    unzip symmetric-server-3.9.14.zip
    
+   --强制递归删除文件夹symmetric，并且不提示
+   rm -rf symmetric
+   
    
