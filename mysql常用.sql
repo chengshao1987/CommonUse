@@ -60,3 +60,5 @@ show variables like "%char%";
 --mysql配置文件
 /etc/my.conf
 
+--查看指定库的指定表的大小
+select concat(round(sum(DATA_LENGTH/1024/1024),2),'MB') as data  from TABLES where table_schema='jishi' and table_name='a_ya';

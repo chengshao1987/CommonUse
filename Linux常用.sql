@@ -157,4 +157,17 @@ cat /proc/cpuinfo |grep MHz|uniq
    --强制递归删除文件夹symmetric，并且不提示
    rm -rf symmetric
    
+   --df命令的功能是用来检查linux服务器的文件系统的磁盘空间占用情况。
+   df -h
+
    
+   --查看gpdata下面所有文件占用空间
+   du -sh ./gpdata/*
+*/
+   
+      
+   --查看gpdata下面所有文件占用空间,并排序取 前两/倒两 个文件
+   du -sh gpdata/* |sort -rn|head -2
+*/
+   du -sh gpdata/* |sort -rn|tail -2
+*/

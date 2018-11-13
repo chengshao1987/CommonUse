@@ -44,6 +44,10 @@ SELECT t.*,t.dfspace/1024/1024 "剩余空间GB"
 FROM gp_toolkit.gp_disk_free t 
 ORDER BY dfsegment;
 
+--gp查看某个数据库占用空间
+select pg_size_pretty(pg_database_size('ttpai_boss_v1'));
+
+
 --gp修改用户密码
  alter user tableau with password 'readuser';
 
@@ -88,4 +92,31 @@ select extract(day FROM (age('2017-12-10'::date , '2017-12-01'::date)));
 
 --计算时间差秒数
 select extract(epoch FROM (now() - (now()-interval '1 day') ));
+
+--清理当前数据库下的所有表：
+vacuum
+
+--只清理一张特定的表：
+VACUUM mytable;
+
+--清理当前数据库下的所有表同时为查询优化器收集统计信息：
+VACUUM ANALYZE;
+
+
+
+--表占用空间 schema ttpai_boss_v1
+SELECT relname as name, sotdsize/1024/1024 as size_MB, sotdtoastsize as toast, sotdadditionalsize as other
+FROM gp_toolkit.gp_size_of_table_disk as sotd, pg_class
+WHERE sotd.sotdoid = pg_class.oid and sotd.sotdschemaname like 'ttpai_boss_v1'
+ORDER BY relname;
+ 
+--索引占用空间
+SELECT soisize/1024/1024 as size_MB, relname as indexname
+FROM pg_class, gp_toolkit.gp_size_of_index
+WHERE pg_class.oid = gp_size_of_index.soioid
+AND pg_class.relkind='i';
+
+
+
+
 
