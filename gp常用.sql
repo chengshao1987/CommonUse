@@ -116,7 +116,7 @@ FROM pg_class, gp_toolkit.gp_size_of_index
 WHERE pg_class.oid = gp_size_of_index.soioid
 AND pg_class.relkind='i';
 
---查看主备节点是否正常运行,表中如果status字段有为d的,说明节点挂了
+--查看主备节点是否正常运行,表中如果status字段有为d的,说明节点挂了，如果有节点挂了使用在master目录使用gprecoverseg命令恢复
 select * from gp_segment_configuration order by dbid
 
 
