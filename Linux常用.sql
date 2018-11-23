@@ -122,6 +122,10 @@ cat /proc/cpuinfo |grep MHz|uniq
  
  --将某个目录的文件复制到另外一个目录，并且改名
  cp samples/corp-000.properties  engines/sunserver-000.properties
+ 
+ --复制文件夹
+ cp -r  bireme-1.0.0 bireme-1.0.0_bak
+
 
  --修改文件权限 ，修改bin下面所有文件的权限
      chmod 755 bin/*
@@ -171,3 +175,7 @@ cat /proc/cpuinfo |grep MHz|uniq
 */
    du -sh gpdata/* |sort -rn|tail -2
 */
+
+	--查看redhat版本是7还是8
+	cat /etc/redhat-release 
+
