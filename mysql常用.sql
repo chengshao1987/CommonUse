@@ -62,3 +62,7 @@ show variables like "%char%";
 
 --查看指定库的指定表的大小
 select concat(round(sum(DATA_LENGTH/1024/1024),2),'MB') as data  from TABLES where table_schema='jishi' and table_name='a_ya';
+
+--mysql dump出表结构
+ mysqldump -h172.16.2.187 -uroot -pbbb -d  --ignore-table=ttpai_boss_v1.BOSS_RECEPTION_DEPART_V ttpai_boss_v1 >C:\Users\test\Downloads\boss.sql
+

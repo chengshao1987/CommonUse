@@ -146,7 +146,7 @@ cat /proc/cpuinfo |grep MHz|uniq
    --查看文件中含有 stack字样的行
    more postgresql.conf |grep stack
 
-   --查看系统用户栈最大值
+   --查看系统的限制值,包括系统用户栈最大值等等
    ulimit -a
    
    --查看linux系统默认编码
@@ -164,6 +164,9 @@ cat /proc/cpuinfo |grep MHz|uniq
    --df命令的功能是用来检查linux服务器的文件系统的磁盘空间占用情况。
    df -h
 
+   --查看内存的方法
+   cat /proc/meminfo  或者 更直观的查看内存的命令：free -m
+   
    
    --查看gpdata下面所有文件占用空间
    du -sh ./gpdata/*
@@ -178,4 +181,7 @@ cat /proc/cpuinfo |grep MHz|uniq
 
 	--查看redhat版本是7还是8
 	cat /etc/redhat-release 
+	
+	--查看系统交换分区大小
+	swapon -s
 
