@@ -52,7 +52,7 @@ SELECT table_name,table_rows FROM TABLES ORDER BY table_rows DESC
  
  
  --查看建表语句
-SHOW CREATE TABLE BOSS_ACCOUNT
+SHOW CREATE TABLE ttpai_boss_v1.ZONE_AROUND
 
 --查看安装目录
 show variables like "%char%";

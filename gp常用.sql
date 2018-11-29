@@ -5,6 +5,11 @@
 10.10.4.83	gpseg02
 10.10.4.84	gpseg03
 
+--增加主键约束
+alter table  ttpai_boss_v1."BOSS_ACCOUNT" add constraint BOSS_ACCOUNT_pk primary key (ID);
+
+--修改表名
+alter table  ttpai_boss_v1."BOSS_ACCOUNT" rename to BOSS_ACCOUNT;
 
 
 --gp字段命名
@@ -217,3 +222,7 @@ shared_buffers + max_connections*(work_mem+temp_buffers)
 
 
 Pivotal Greenplum Command Center (GPCC) V4已经正式发布
+
+
+Pivotal query optimizer (ORCA) 生成查询计划的时间开销高于旧的优化器，也就是说对小查询（毫秒级别的查询）性能会变差。
+如果用户使用单行 Insert 的方式插入数据，建议变更加载数据的方式，使用 COPY 命令批量加载。
