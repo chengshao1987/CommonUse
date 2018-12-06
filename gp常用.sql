@@ -226,3 +226,57 @@ Pivotal Greenplum Command Center (GPCC) V4已经正式发布
 
 Pivotal query optimizer (ORCA) 生成查询计划的时间开销高于旧的优化器，也就是说对小查询（毫秒级别的查询）性能会变差。
 如果用户使用单行 Insert 的方式插入数据，建议变更加载数据的方式，使用 COPY 命令批量加载。
+
+
+--postgre 系统表
+pg_aggregate		聚集函数
+pg_am				索引访问方法
+pg_amop				访问方法操作符
+pg_amproc			访问方法支持过程
+pg_attrdef			字段缺省值
+pg_attribute		表的列(也称为"属性"或"字段")
+pg_authid			认证标识符(角色)
+pg_auth_members		认证标识符成员关系
+pg_autovacuum		每个关系一个的自动清理配置参数
+pg_cast				转换(数据类型转换)
+pg_class			表、索引、序列、视图("关系")
+pg_constraint		检查约束、唯一约束、主键约束、外键约束
+pg_conversion		编码转换信息
+pg_database			本集群内的数据库
+pg_depend			数据库对象之间的依赖性
+pg_description		数据库对象的描述或注释
+pg_index			附加的索引信息
+pg_inherits			表继承层次
+pg_language			用于写函数的语言
+pg_largeobject		大对象
+pg_listener			异步通知
+pg_namespace		模式
+pg_opclass			索引访问方法操作符类
+pg_operator			操作符
+pg_pltemplate		过程语言使用的模板数据
+pg_proc				函数和过程
+pg_rewrite			查询重写规则
+pg_shdepend			在共享对象上的依赖性
+pg_shdescription	共享对象上的注释
+pg_statistic		优化器统计
+pg_tablespace		这个数据库集群里面的表空间
+pg_trigger			触发器
+pg_type				数据类型
+--postgre 系统视图
+pg_cursors				打开的游标
+pg_group				数据库用户的组
+pg_indexes				索引
+pg_locks				当前持有的锁
+pg_prepared_statements	预备语句
+pg_prepared_xacts		预备事务
+pg_roles				数据库角色
+pg_rules				规则
+pg_settings				参数设置
+pg_shadow				数据库用户
+pg_stats				规划器统计
+pg_tables				表
+pg_timezone_abbrevs		时区缩写
+pg_timezone_names		时区名
+pg_user					数据库用户
+pg_views				视图
+
