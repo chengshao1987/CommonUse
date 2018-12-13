@@ -1,3 +1,37 @@
+--再谈谈Greenplum
+1. 支持列存，行存，混合存储。
+2. 支持扩展的外部数据源（如阿里云提供的极为廉价的OSS外部存储）。
+3. 支持并行的数据导入导出。
+4. 支持非常完备的OLAP语法。
+5. 支持MADLib分析函数库。
+6. 支持R，Python, Java的数据库UDF编程。
+7. 支持主备，数据节点mirror，在线扩展数据节点。
+8. 支持用户资源（并发，CPU,MEMORY）调度。
+9. 支持丰富的数据类型（数字、字符串、比特串、货币、字节流、时间、布尔、几何、网络地址、数组、GIS、XML、JSON、复合、枚举）。
+10. 支持R隐式并行。11. 扩展方面支持用户自定义数据类型、操作符、索引、UDF、窗口、聚合。
+12. 支持全文检索、字符串模糊查询（fuzzystrmatch） 
+13. 支持ORACLE兼容包插件orafunc14. 多种索引支持(btree)，支持函数索引，支持partial index
+15. 内置丰富的函数、操作符、聚合、窗口查询
+
+
+
+
+--gp存储容量
+存储空间除了用来存储用户数据，还需要：landing backup files and data load files
+空系统的存储空间：disk_size * number_of_disks
+除去系统开销：(raw_capacity * 0.9) / 2 = formatted_disk_space
+为了获取最佳性能，容量不超过70%：formatted_disk_space * 0.7 = usable_disk_space
+如果开启了segments镜像，数据量翻倍，并且还需要其他空间作为查询的工作区域（大的查询会生成临时文件）：
+With mirrors: (2 * U) + U/3 = usable_disk_space
+Without mirrors: U + U/3 = usable_disk_space
+临时空间和用户空间是可以通过表空间指定到不同的位置的。
+除了数据以外的消耗：Page、Row、Attribute、Index（索引也被认为是用户数据）
+其它空间消耗：1.系统日志消耗20MB，WAL日志消耗2 * checkpoint_segments + 1，默认参数为8，大小为64MB；
+			  2.GPDB的Log Files;
+              3.性能监控用到的agent会一直搜集数据信息，并且不会自动清空
+
+
+
 --测试环境的配置
 /etc/hosts  --这个文件用来指定hosts
 10.10.4.81	gpmaster
