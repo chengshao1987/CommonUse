@@ -314,3 +314,6 @@ pg_timezone_names		时区名
 pg_user					数据库用户
 pg_views				视图
 
+
+--gp COPY命令
+copy ttpai_boss_demension."BOSS_PHONE_RELATIVE" to '/opt/websuite/BOSS_PHONE_RELATIVE.txt' WITH DELIMITER AS ',';
