@@ -53,7 +53,7 @@ alter table  ttpai_boss_v1."BOSS_ACCOUNT" rename to BOSS_ACCOUNT;
   create schema ttpai_boss_demension;
   
  --删除schema
- drop schema ttpai_test cascade;
+ drop schema if exists ttpai_test cascade;
 
  --修改schema名字
    alter schema boss_demension rename  to ttpai_boss_demension;
