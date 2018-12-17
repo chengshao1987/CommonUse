@@ -32,12 +32,8 @@ Without mirrors: U + U/3 = usable_disk_space
 
 
 
---测试环境的配置
-/etc/hosts  --这个文件用来指定hosts
-10.10.4.81	gpmaster
-10.10.4.82	gpseg01
-10.10.4.83	gpseg02
-10.10.4.84	gpseg03
+
+
 
 --增加主键约束
 alter table  ttpai_boss_v1."BOSS_ACCOUNT" add constraint BOSS_ACCOUNT_pk primary key (ID);
