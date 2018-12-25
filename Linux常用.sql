@@ -43,6 +43,10 @@ grep -C 5 10050659 BOSS_SIGNUP.txt --color=auto
 --cat指定行数开始显示1000行
 cat  be.INFO.log.20180830-180713 |tail -n +5778859|head -n 1000
 
+
+--查找文件中包含 10.10.4.29和CARMODEL_MODEL_BASE 的行 并分页显示
+cat gpdb-2018-12-19_000000.csv |grep 10.10.4.29 | grep CARMODEL_MODEL_BASE |more
+
 --sed命令显示第5778859到5778888行
 sed -n '5778859,5778888p'  be.INFO.log.20180830-180713
 

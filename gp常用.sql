@@ -71,6 +71,11 @@ WHERE datname = 'boss_demension' AND procpid <> pg_backend_pid();
 drop database boss_demension;
 
 
+--数据库总大小
+select round(sum(t.sodddatsize)::numeric/1024/1024/1024,2)||' G' 数据库大小 from gp_toolkit.gp_size_of_database t
+
+--节点剩余空间总大小
+select round(sum(dfspace)/1024/1024,2)||' G' segment空闲磁盘空间 from gp_toolkit.gp_disk_free 
 
 --gp查看各个节点的剩余空间  
 SELECT t.*,t.dfspace/1024/1024 "剩余空间GB"
@@ -79,6 +84,19 @@ ORDER BY dfsegment;
 
 --gp查看某个数据库占用空间
 select pg_size_pretty(pg_database_size('ttpai_boss_v1'));
+
+
+--表占用空间 schema ttpai_boss_v1
+SELECT relname as name, sotdsize/1024/1024 as size_MB, sotdtoastsize as toast, sotdadditionalsize as other
+FROM gp_toolkit.gp_size_of_table_disk as sotd, pg_class
+WHERE sotd.sotdoid = pg_class.oid and sotd.sotdschemaname like 'ttpai_boss_v1'
+ORDER BY relname;
+ 
+--索引占用空间
+SELECT soisize/1024/1024 as size_MB, relname as indexname
+FROM pg_class, gp_toolkit.gp_size_of_index
+WHERE pg_class.oid = gp_size_of_index.soioid
+AND pg_class.relkind='i';
 
 
 --gp修改用户密码
@@ -137,23 +155,19 @@ VACUUM ANALYZE;
 
 
 
---表占用空间 schema ttpai_boss_v1
-SELECT relname as name, sotdsize/1024/1024 as size_MB, sotdtoastsize as toast, sotdadditionalsize as other
-FROM gp_toolkit.gp_size_of_table_disk as sotd, pg_class
-WHERE sotd.sotdoid = pg_class.oid and sotd.sotdschemaname like 'ttpai_boss_v1'
-ORDER BY relname;
- 
---索引占用空间
-SELECT soisize/1024/1024 as size_MB, relname as indexname
-FROM pg_class, gp_toolkit.gp_size_of_index
-WHERE pg_class.oid = gp_size_of_index.soioid
-AND pg_class.relkind='i';
+
 
 --查看主备节点是否正常运行,表中如果status字段有为d的,说明节点挂了，如果有节点挂了使用在master目录使用  gprecoverseg  命令恢复
 select * from gp_segment_configuration order by dbid
 
 --查看服务器参数设置(在客户端)
 show all 
+--查看某个参数的设置
+show max_connections;
+--查看数据文件存放目录  待做：查看gp数据文件存放文件在哪
+show data_directory 
+
+
 
 --linux查看参数设置
 gpconfig -s shared_buffers
@@ -310,6 +324,137 @@ pg_timezone_names		时区名
 pg_user					数据库用户
 pg_views				视图
 
+--linux 服务器某个实例的目录和文件用途,比如  /opt/websuite/gpdata/gpdatap1/gpseg0
+PG_VERSION	一个包含PostgreSQL主版本号的文件
+base	与每个数据库对应的子目录存储在该目录中
+global	集群范围的表存储在该目录中，比如pg_database
+pg_clog	包含事务提交状态数据的子目录
+pg_dynshmem	包含动态共享内存子系统使用的文件的子目录
+pg_logical	包含逻辑解码状态数据的子目录
+pg_multixact	包含多重事务状态数据的子目录(使用共享的行锁)
+pg_notify	包含LISTEN/NOTIFY状态数据的子目录
+pg_replslot	包含复制槽数据的子目录
+pg_serial	包含已提交可串行化事务信息的子目录
+pg_snapshots	包含输出快照的子目录
+pg_stat	包含统计系统的永久文件的子目录
+pg_stat_tmp	用于统计子系统的临时文件存储在该目录中
+pg_subtrans	包含子事务状态数据的子目录
+pg_tblspc	包含指向表空间的符号链接的子目录
+pg_twophase	包含用于预备事务的状态文件的子目录
+pg_xlog	包含WAL(预写日志)文件的子目录
+postgresql.auto.conf	用于存储ALTER SYSTEM设置的配置参数的文件
+postmaster.opts	一个记录服务器最后一次启动时使用的命令行参数的文件
+postmaster.pid	一个锁文件， 记录当前服务器主进程ID(PID)，集群数据目录路径，服务器启动时间戳，端口号， Unix-域套接目录路径（Windows上为空），第一个有效listen_address(IP地址或者*， 如果不监听TCP，则为空)，以及共享内存段ID， （在服务器关闭之后此文件就不存在了）。
+
+
 
 --gp COPY命令
 copy ttpai_boss_demension."BOSS_PHONE_RELATIVE" to '/opt/websuite/BOSS_PHONE_RELATIVE.txt' WITH DELIMITER AS ',';
+
+
+
+
+
+
+select *from gp_toolkit.gp_log_command_timings limit 20
+
+检查需要日常维护的表格
+以下视图可以帮助识别需要常规表维护的表（VACUUM和/或ANALYZE）。
+•gp_bloat_diag
+•gp_stats_missing
+VACUUM或VACUUM FULL命令回收被删除或过时的行所占用的磁盘空间。 由于Greenplum数据库中使用的MVCC事务并发模型，删除或更新的数据行仍占用磁盘上的物理空间，即使它们对于任何新事务都不可见。 过期行增加磁盘上的表大小，并最终减慢表的扫描。
+ANALYZE命令收集查询优化器所需的列级统计信息。 Greenplum数据库使用依赖于数据库统计信息的基于成本的查询优化器。 准确的统计信息允许查询优化器更好地估计选择性和查询操作检索的行数，以便选择最高效的查询计划。
+
+--greenplum 高可用
+
+--greenplum 关闭日志(会话级别)
+set log_statement = none;
+--查看日志参数
+show log_statement;  
+
+log_statement参数控制记录哪些SQL语句。有效值是none（off），ddl，mod和all（所有语句）。 
+ddl记录所有数据定义语句，例如CREATE，ALTER和DROP语句。 
+mod记录所有ddl语句，以及数据修改语句，如INSERT，UPDATE，DELETE，TRUNCATE和COPY FROM。 
+PREPARE，EXECUTE和EXPLAIN如果包含的命令是适当的类型，则也会记录ANALYZE语句。对于使用扩展查询协议的客户端，在收到执行消息时会发生日志记录，并且包含绑定参数的值（使任何嵌入的单引号标记翻倍）。
+默认值是none。只有超级用户可以更改此设置。
+
+
+
+--系统信息
+6.1.1 gpstate
+gpstate 工具显示了 Greenplum 数据库的系统状态，包括哪些段数据库(Segments)宕机，主服
+务器(Master)和 Segment 的配置信息（主机、数据目录等），系统使用的端口和 Segments 的镜像信
+息。
+运行 gpstate -Q 列出 Master 系统表中标记为“宕机” 的 Segments。
+使用 gpstate -s 显示 Greenplum 集群的详细状态信息。
+6.1.2 gpcheckperf
+gpcheckperf 工具测试给定主机的基本硬件性能。其结果可以帮助识别硬件问题。它执行下面
+的检查：
+ 磁盘 I/O 测试 - 使用操作系统的 dd 命令读写一个大文件，测试磁盘的 IO 性能。它以每秒
+多少兆包括读写速度。
+ 内存带宽测试 - 使用 STREAM 基准程序测试可持续的内存带宽。
+ 网络性能测试 - 使用 gpnetbench 网络基准程序（也可以用 netperf）测试网络性能。
+测试有三种模式：并行成对测试（-r N） ,串行成对测试（-r n），全矩阵测试（-r M）。
+测试结果包括传输速率的最小值、最大值、平均数和中位数。
+运行 gpcheckperf 时数据库必须停止。如果系统不停止，即使没有查询， gpcheckperf 的结果
+也可能不精确
+
+
+下面的 Linux/Unix 工具可用于评估主机性能：
+ iostat 监控段数据库(Segments)的磁盘活动
+ top 显示操作系统进程的动态信息
+ vmstate 显示内存使用情况的统计信息
+ nmon 收集性能数据
+可以使用 gpssh 在多个主机上运行这些命令
+
+--磁盘空间使用
+磁盘空间使用：为了保持gp数据库的性能，gp数据库中需要确保Master和Segment数据目录所在的文件系统不会增长到超过70%。使用gp_toolkit管理工具查看数据库中 数据库，索引，schema，表等对象磁盘空间占用大小，编写了两个sql分别查看数据库已经占用空间总大小和节点剩余空间总大小。
+            数据库占用磁盘大小：select round(sum(t.sodddatsize)::numeric/1024/1024/1024,2)||' G' 数据库大小 from gp_toolkit.gp_size_of_database t   ；
+            节点剩余空间总大小：select round(sum(dfspace)/1024/1024,2)||' G' segment空闲磁盘空间 from gp_toolkit.gp_disk_free ；
+
+--查看gp数据库是否倾斜
+	select gp_execution_dbid(),datname,pg_size_pretty(pg_database_size(datname))
+from gp_dist_random('pg_database') order by 2,1,pg_database_size(datname) desc;
+
+--gp_dist_random
+gp_dist_random()函数的作用就是从MASTER可以查到某一个表在各个SEGMENT上的情况(不包含MASTER)。
+
+--查看某个表是否有数据倾斜
+    SELECT gp_segment_id, count(*) FROM ttpai_boss_v1."BOSS_SIGNUP" 
+WHERE CREATE_TIME>=DATE '2018-12-20'
+AND CREATE_TIME <DATE '2018-12-21'
+    GROUP BY gp_segment_id
+    ORDER BY 1
+	
+
+	--通过两个视图查看数据是否有倾斜
+	gp_skew_coefficients
+该视图通过计算存储在每个Segment上的数据的变异系数（CV）来显示数据分布倾斜。该视图能够被所有用户访问，但是非超级用户只能看到他们有权访问的表。
+
+当我们使用视图gp_toolkit.gp_skew_coefficients来检查表数据倾斜时，该视图会基于表的行数据量来检查，如果表数据量越大，检查时间就会越长。
+其中skccoeff 通过存储记录均值计算出的标准差，这个值越低说明数据存放约均匀，反之说明数据存储分布不均匀，要考虑分布键选择是否合理。
+
+
+gp_skew_idle_fractions
+该视图通过计算在表扫描过程中系统空闲的百分比来显示数据分布倾斜，这是一种数据处理倾斜的指示器。该视图能够被所有用户访问，但是非超级用户只能看到他们有权访问的表。
+另外一个视图gp_toolkit.gp_skew_idle_fractions 通过计算表扫描过程中，系统闲置的百分比，帮助用户快速判断，是否存在分布键选择不合理，导致数据处理倾斜的问题。
+siffraction字段表示表扫描过程中系统闲置的百分比，比如0.1表示10%的倾斜。
+
+--创建函数监控倾斜超过百分之20的表
+创建一个函数定期执行，然后将数据倾斜超过百分之20的表插入到指定的表里面，我们可以根据函数执行的结果再对有倾斜的表做详细分析。
+
+
+
+--会话的内存利用信息
+可以创建并且使用session_level_memory_consumption视图来查看正在Greenplum数据库上运行查询的会话的当前内存利用信息。
+要在Greenplum数据库中创建session_level_memory_consumption视图，为每一个数据库运行一次脚本$GPHOME/share/postgresql/contrib/gp_session_state.sql。
+
+2019年规划：
+Greenplum数据库开发和运维熟练掌握
+Postgre数据库开发和运维熟练掌握
+Linux相关知识熟练掌握
+Tableau熟练掌握
+深度学习熟悉和了解
+
+ 
+
