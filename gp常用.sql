@@ -265,7 +265,7 @@ gpinitstandby -r => 移除备用机
 shared_buffers + max_connections*(work_mem+temp_buffers)
 
 
-Pivotal Greenplum Command Center (GPCC) V4已经正式发布
+Pivotal Greenplum Command Center (GPCC) V4已经正式发布 --todo
 
 
 Pivotal query optimizer (ORCA) 生成查询计划的时间开销高于旧的优化器，也就是说对小查询（毫秒级别的查询）性能会变差。
@@ -365,7 +365,7 @@ select *from gp_toolkit.gp_log_command_timings limit 20
 VACUUM或VACUUM FULL命令回收被删除或过时的行所占用的磁盘空间。 由于Greenplum数据库中使用的MVCC事务并发模型，删除或更新的数据行仍占用磁盘上的物理空间，即使它们对于任何新事务都不可见。 过期行增加磁盘上的表大小，并最终减慢表的扫描。
 ANALYZE命令收集查询优化器所需的列级统计信息。 Greenplum数据库使用依赖于数据库统计信息的基于成本的查询优化器。 准确的统计信息允许查询优化器更好地估计选择性和查询操作检索的行数，以便选择最高效的查询计划。
 
---greenplum 高可用
+--greenplum 高可用原理:日志和数据刷盘动作以及顺序
 
 --greenplum 关闭日志(会话级别)
 set log_statement = none;
