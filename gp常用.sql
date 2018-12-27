@@ -240,11 +240,13 @@ gprecoverseg -a => 快速恢复
 gprecoverseg -i => 指定恢复文件
 gprecoverseg -d => 指定数据目录
 gprecoverseg -l => 指定日志文件
-gprecoverseg -r => 平衡数据
+gprecoverseg -r => 平衡数据  当FTS发现有Primary宕机并进行主备切换，在gprecoverseg修复后，担当Primary的Mirror角色并不会立即切换回来，就会导致部分主机上活跃的Segment过多从而引起性能瓶颈。因此需要恢复Segment原先的角色，称为re-balance.
 gprecoverseg -s => 指定配置空间文件
 gprecoverseg -o => 指定恢复配置文件
 gprecoverseg -p => 指定额外的备用机
 gprecoverseg -S => 指定输出配置空间文件
+gprecoverseg -F => 可选项，指定后，gprecoverseg会将”-i”中指定的或标记”d”的实例删除，并从活着的Mirror复制一个完整一份到目标位置。 
+
 
 
 --激活备库流程
@@ -406,6 +408,8 @@ gpcheckperf 工具测试给定主机的基本硬件性能。其结果可以帮�
  vmstate 显示内存使用情况的统计信息
  nmon 收集性能数据
 可以使用 gpssh 在多个主机上运行这些命令
+
+确保Master和Segment数据目录所在的文件系统不会增长到超过70%的充满程度
 
 --磁盘空间使用
 磁盘空间使用：为了保持gp数据库的性能，gp数据库中需要确保Master和Segment数据目录所在的文件系统不会增长到超过70%。使用gp_toolkit管理工具查看数据库中 数据库，索引，schema，表等对象磁盘空间占用大小，编写了两个sql分别查看数据库已经占用空间总大小和节点剩余空间总大小。

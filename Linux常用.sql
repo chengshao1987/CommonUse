@@ -188,4 +188,9 @@ cat /proc/cpuinfo |grep MHz|uniq
 	
 	--查看系统交换分区大小
 	swapon -s
-
+	
+	--查看crontab的日志记录
+	1.  linux
+	看 /var/log/cron这个文件就可以，可以用tail -f /var/log/cron观察(不能用cat查看)
+	2. mail任务
+	在 /var/spool/mail/root 文件中，有crontab执行日志的记录，用tail -f /var/spool/mail/root 即可查看最近的crontab执行情况。
