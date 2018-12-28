@@ -211,11 +211,11 @@ gpconfig -? | -h | --help 显示在线帮助。
 
 --gpstart
 命令     参数   作用 
-gpstart -a => 快速启动|
-gpstart -d => 指定数据目录（默认值：$MASTER_DATA_DIRECTORY）
+gpstart -a => 快速启动| 不需要用户确认
+gpstart -d => 指定数据目录（默认值：$MASTER_DATA_DIRECTORY）  指定master数据目录
 gpstart -q => 在安静模式下运行。命令输出不显示在屏幕，但仍然写入日志文件。
-gpstart -m => 以维护模式连接到Master进行目录维护。例如：$ PGOPTIONS='-c gp_session_role=utility' psql postgres
-gpstart -R => 管理员连接
+gpstart -m => 以维护模式连接到Master进行目录维护,只启动Master。例如：$ PGOPTIONS='-c gp_session_role=utility' psql postgres  
+gpstart -R => 管理员连接  受限模式，只有超级用户能连数据库
 gpstart -v => 显示详细启动信息
 
 
@@ -231,6 +231,7 @@ gpstop -v => 显示详细启动信息
 gpstop -M fast      => 快速关闭。正在进行的任何事务都被中断。然后滚回去。
 gpstop -M immediate => 立即关闭。正在进行的任何事务都被中止。不推荐这种关闭模式，并且在某些情况下可能导致数据库损坏需要手动恢复。
 gpstop -M smart     => 智能关闭。如果存在活动连接，则此命令在警告时失败。这是默认的关机模式。
+gpstop -y     => 不停止master镜像，默认是停止镜像。
 gpstop --host hostname => 停用segments数据节点，不能与-m、-r、-u、-y同时使用 
 
 
@@ -461,4 +462,28 @@ Tableau熟练掌握
 深度学习熟悉和了解
 
  
+ 
+ 
+ 
+1、列出FATAL and ERROR级别的错误日志。
+检查方法：
+方法1，在安装了gpperfmon组件的情况下
+
+连接到gpperfmon数据库，执行：
+
+SELECT * FROM log_alert_history    
+WHERE logseverity in ('FATAL', 'ERROR')    
+   AND logtime > (now() - interval '15 minutes');    
+方法2，查看所有节点(master, standby master, primary, mirror segments)的pg_log。过滤FATAL and ERROR级别的错误日志。
+
+方法3，查看这些系统视图
+
+                        List of relations    
+   Schema   |          Name          | Type |  Owner   | Storage     
+------------+------------------------+------+----------+---------    
+ gp_toolkit | gp_log_command_timings | view | digoal   | none  -- 统计    
+ gp_toolkit | gp_log_database        | view | digoal   | none  -- 这个包含当前数据库日志    
+ gp_toolkit | gp_log_master_concise  | view | digoal   | none  -- 统计    
+ gp_toolkit | gp_log_system          | view | digoal   | none  -- 这个包含所有日志    
+
 
