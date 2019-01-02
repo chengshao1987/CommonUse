@@ -486,4 +486,7 @@ WHERE logseverity in ('FATAL', 'ERROR')
  gp_toolkit | gp_log_master_concise  | view | digoal   | none  -- 统计    
  gp_toolkit | gp_log_system          | view | digoal   | none  -- 这个包含所有日志    
 
+ 
+ ./mysql2pgsql -l loader_table_list.txt -j8 -s ttpai_boss_v1
 
+source /etc/profile
