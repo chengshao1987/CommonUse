@@ -54,9 +54,26 @@ alter table  ttpai_boss_v1."BOSS_ACCOUNT" rename to BOSS_ACCOUNT;
  --修改schema名字
    alter schema boss_demension rename  to ttpai_boss_demension;
 
- --gp给schema赋权
+   
+--创建用户
+create user tableau with PASSWORD 'tableau';
+--创建数据库
+create database ttpai_bi;
+
+--将数据库的权限赋权给tableau用户
+grant CONNECT  on DATABASE ttpai_bi to tableau;
+
+--创建schema
+create SCHEMA ttpai_boss_v1;
+
+--将schema的权限赋权给tableau用户
+grant USAGE on schema ttpai_boss_v1 to tableau;
  grant all on schema ttpai_boss_demension to tableau;
  revoke all on schema ttpai_boss_demension from tableau;
+ 
+ --将某个schema的表的权限批量赋权给某个用户
+ grant select ,update ,delete on all tables in schema ttpai_boss_v1 to tableau;
+revoke select ,update ,delete on all tables in schema ttpai_boss_v1 from tableau;
  
  --返回星期几
  select EXTRACT(dow FROM now())
