@@ -36,7 +36,7 @@ Without mirrors: U + U/3 = usable_disk_space
 
 
 --增加主键约束
-alter table  ttpai_boss_v1."BOSS_ACCOUNT" add constraint BOSS_ACCOUNT_pk primary key (ID);
+alter table  ttpai_boss_v1."BOSS_ACCOUNT" add constraint BOSS_ACCOUNT_pkey primary key (ID);
 
 --修改表名
 alter table  ttpai_boss_v1."BOSS_ACCOUNT" rename to BOSS_ACCOUNT;
