@@ -507,3 +507,15 @@ WHERE logseverity in ('FATAL', 'ERROR')
  ./mysql2pgsql -l loader_table_list.txt -j8 -s ttpai_boss_v1
 
 source /etc/profile
+
+
+--SNMP 配置
+1找老司机安装SNMP
+systemctl start snmpd
+systemctl stop snmpd
+2验证系统的snmpd守护进程正在运行：snmpwalk -v 1 -c public localhost .1.3.6.1.2.1.1
+3使用gpconfig配置gp数据库中的SNMP参数
+gpconfig -c gp_snmp_community -v public --masteronly
+gpconfig -c gp_snmp_monitor_address -v gpmaster:162 --masteronly
+gpconfig -c gp_snmp_use_inform_or_trap -v trap --masteronly
+4要测试SNMP通知，可以使用snmptrapd陷阱接收器。作为root输入： /usr/sbin/snmptrapd -m ALL -Lf ~/filename.log  --   -Lf表示trap被记录到一个文件中。-Le表示trap被记录到stderr。-m ALL载入所有可用的MIB（如果需要还可以指定个别的MIB）。

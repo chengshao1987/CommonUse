@@ -194,3 +194,12 @@ cat /proc/cpuinfo |grep MHz|uniq
 	看 /var/log/cron这个文件就可以，可以用tail -f /var/log/cron观察(不能用cat查看)
 	2. mail任务
 	在 /var/spool/mail/root 文件中，有crontab执行日志的记录，用tail -f /var/spool/mail/root 即可查看最近的crontab执行情况。
+	
+	--查看历史命令 包含snmp字样
+	history |grep snmp
+
+	--查看主机名
+	hostname
+	
+	--查看日期和时间
+	date
