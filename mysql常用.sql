@@ -65,4 +65,15 @@ select concat(round(sum(DATA_LENGTH/1024/1024),2),'MB') as data  from TABLES whe
 
 --mysql dump出表结构
  mysqldump -h172.16.2.187 -uroot -pbbb -d  --ignore-table=ttpai_boss_v1.BOSS_RECEPTION_DEPART_V ttpai_boss_v1 >C:\Users\test\Downloads\boss.sql
+ 
+ 
+ -- 以下代码是检测没有主键的表
+ SELECT a.table_schema,a.table_name,b.table_schema,b.table_name FROM (
+ SELECT DISTINCT table_schema,table_name FROM  COLUMNS WHERE TABLE_SCHEMA LIKE 'ttpai%' 
+ ) a
+  LEFT JOIN 
+ (SELECT DISTINCT table_schema,table_name FROM  COLUMNS WHERE TABLE_SCHEMA LIKE 'ttpai%' 
+  AND column_key LIKE 'PRI') b
+  ON a.table_schema=b.table_schema AND a.table_name=b.table_name
+  WHERE b.table_name IS NULL
 
