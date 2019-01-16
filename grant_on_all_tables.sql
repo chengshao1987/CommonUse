@@ -1,3 +1,5 @@
+-- 以下脚本是Greenplum批量赋权脚本(内核PostgreSQL 9.0以前)
+-- 在PostgreSQL 9.0之后，可以使用类似GRANT ALL ON ALL TABLES IN SCHEMA {schemaname} TO {username}完成批量赋权和回收权限功能。
 create or replace function grant_on_all_tables(schema text, usr text) 
 returns setof text as $$ 
 declare 
