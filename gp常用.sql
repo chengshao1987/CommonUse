@@ -75,6 +75,20 @@ grant USAGE on schema ttpai_boss_v1 to tableau;
  grant select ,update ,delete on all tables in schema ttpai_boss_v1 to tableau;
 revoke select ,update ,delete on all tables in schema ttpai_boss_v1 from tableau;
  
+1、查看某用户的表权限
+select * from information_schema.table_privileges where grantee='user_name';
+2、查看usage权限表
+select * from information_schema.usage_privileges where grantee='user_name';
+3、查看存储过程函数相关权限表
+select * from information_schema.routine_privileges where grantee='user_name';
+4、建用户授权
+create user user_name;
+alter user user_name with password '';
+alter user user_name with CONNECTION LIMIT  20;#连接数限制
+
+如何查看schema的权限
+ 
+ 
  --返回星期几
  select EXTRACT(dow FROM now())
 
@@ -518,4 +532,4 @@ systemctl stop snmpd
 gpconfig -c gp_snmp_community -v public --masteronly
 gpconfig -c gp_snmp_monitor_address -v gpmaster:162 --masteronly
 gpconfig -c gp_snmp_use_inform_or_trap -v trap --masteronly
-4要测试SNMP通知，可以使用snmptrapd陷阱接收器。作为root输入： /usr/sbin/snmptrapd -m ALL -Lf ~/filename.log  --   -Lf表示trap被记录到一个文件中。-Le表示trap被记录到stderr。-m ALL载入所有可用的MIB（如果需要还可以指定个别的MIB）。
+4要测试SNMP通知，可以使用snmptrapd陷阱接收器。作为root输入： /usr/sbin/snmptrapd -m ALL -Lf ~/snmptrap.log  --   -Lf表示trap被记录到一个文件中。-Le表示trap被记录到stderr。-m ALL载入所有可用的MIB（如果需要还可以指定个别的MIB）。
