@@ -32,7 +32,10 @@ Without mirrors: U + U/3 = usable_disk_space
 
 
 
-
+--查看表字段和注释
+Select a.attnum,(select description from pg_catalog.pg_description where objoid=a.attrelid and objsubid=a.attnum) as descript ,a.attname
+,pg_catalog.format_type(a.atttypid,a.atttypmod) as data_type from pg_catalog.pg_attribute a where 1=1 and a.attrelid=(select oid from pg_class where relname='BOSS_CHECK_REPORT_INJURE_SKELETON_V3' ) 
+and a.attnum>0 and not a.attisdropped order by a.attnum;
 
 
 --增加主键约束
@@ -71,7 +74,7 @@ grant USAGE on schema ttpai_boss_v1 to tableau;
  grant all on schema ttpai_boss_demension to tableau;
  revoke all on schema ttpai_boss_demension from tableau;
  
- --将某个schema的表的权限批量赋权给某个用户
+ --将某个schema的表的权限批量赋权给某个用户(Postgre9.0以后的功能)
  grant select ,update ,delete on all tables in schema ttpai_boss_v1 to tableau;
 revoke select ,update ,delete on all tables in schema ttpai_boss_v1 from tableau;
  
@@ -533,3 +536,6 @@ gpconfig -c gp_snmp_community -v public --masteronly
 gpconfig -c gp_snmp_monitor_address -v gpmaster:162 --masteronly
 gpconfig -c gp_snmp_use_inform_or_trap -v trap --masteronly
 4要测试SNMP通知，可以使用snmptrapd陷阱接收器。作为root输入： /usr/sbin/snmptrapd -m ALL -Lf ~/snmptrap.log  --   -Lf表示trap被记录到一个文件中。-Le表示trap被记录到stderr。-m ALL载入所有可用的MIB（如果需要还可以指定个别的MIB）。
+
+GP resource quene 资源队列
+gp_interconnect_type
