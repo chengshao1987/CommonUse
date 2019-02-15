@@ -539,3 +539,46 @@ gpconfig -c gp_snmp_use_inform_or_trap -v trap --masteronly
 
 GP resource quene 资源队列
 gp_interconnect_type
+
+--postgre数据库本地登录
+./bin/psql -h 127.0.0.1 -d postgres -U postgres -p 5432
+
+--postgre重新加载配置文件
+pg_ctl reload -D /opt/websuite/postgre/postgresql_data/
+
+
+
+
+Greenplum dblink 弊端
+目前dblink与普通的用户自定义函数类似，并没有和Greenplum的MPP架构进行适配，它们会在master节点被调用，如果dblink返回的结果集较大，master很容易成为瓶颈。
+
+如果需要使用dblink与其他表进行JOIN，流程是这样的。
+
+1. 首先会在master调用dblink，
+
+2. dblink执行的结果集会收到master节点
+
+3. master节点将结果集重分布到数据节点，
+
+4. 然后再与其他表进行JOIN。（好在JOIN并不会在master节点执行。）
+
+当然，我们不排除gpdb社区未来会改造dblink，来适配MPP的架构。但是至少目前还存在以上弊端，(除非dblink返回的结果集很小，否则请谨慎使用）。
+
+建议的方案
+1. 建议数据放到一个数据库中，使用不同的schema来区分不同的业务数据或公共数据。这样的话在同一个数据库中就可以任意的JOIN了，对master无伤害。
+
+2. 如果不同业务一定要使用多个数据库，那么建议使用外部表作为公共表，这样做也不会伤害MASTER，并且每个节点都可以并行的访问外部表的数据。
+
+例如gpfdist外部表，阿里云HybridDB的OSS外部表等。
+
+外部表一旦写入，就不可修改，如果公共数据经常变化，或者定期需要更新，（例如某些账务系统，每天或定期会将用户信息更新到Greenplum中）那么建议使用一个字段来标示最新数据，同时低频率的增量合并外部表。
+
+例如
+
+2.1. 只写 tbl_foreign_table_news(id int, xxx, xxx 最后更新时间)。
+
+2.2. 低频率的truncate tbl_foreign_table_origin，然后将tbl_foreign_table_news合并到 tbl_foreign_table_origin。
+
+2.3. 用户查询tbl_foreign_table_origin即为公共数据。
+
+3. 如果dblink获取的结果集较小，那么使用dblink作为临时的方案，来实现实例内跨库数据JOIN是没有太大问题的。
