@@ -1,3 +1,59 @@
+greenplum是基于超大型DW或OLAP数据库的集群型解决方案，它是基于postgresql开发的；你要是有postgresql数据库的底子，进阶greenplum自是如飞冲天。
+greenplum和mysql或者诸多的大型软件一般，也是采用2条脚走路，一为商业版本，二为开源版本。
+
+greenplum开源版本
+   其官方手册 https://greenplum.org/documentation/
+   其下载介质地址 https://github.com/greenplum-db/gpdb/releases
+
+greenplum商业版本(注：下载介质必须要付费，官方手册可以在线或离线看）
+   其官方手册  http://gpdb.docs.pivotal.io/570/main/index.html
+   其下载介质地址 https://network.pivotal.io/products/pivotal-gpdb/
+
+greenplum商业版本与开源版本的差异
+  可在企业版的官方手册之 pivotal greenplum 具体版本 release notes
+  difference compared to open source green plum database
+  
+  
+  
+Differences Compared to Open Source Greenplum Database
+Pivotal Greenplum 5.x includes all of the functionality in the open source Greenplum Database project and adds:
+Product packaging and installation script.
+Support for QuickLZ compression. QuickLZ compression is not provided in the open source version of Greenplum Database due to licensing restrictions.
+Support for managing Greenplum Database using Pivotal Greenplum Command Center.
+Support for full text search and text analysis using Pivotal GPText.
+Support for data connectors:
+Greenplum-Spark Connector
+Greenplum-Informatica Connector
+Greenplum-Kafka Connector
+Gemfire-Greenplum Connector
+Data Direct ODBC/JDBC Drivers
+gpcopy utility for copying or migrating objects between Greenplum systems.
+Pivotal Greenplum 5.x does not support the following community-contributed features of open source Greenplum Database:
+The PXF JDBC connector.
+The PXF Apache Ignite connector.
+
+
+
+Greenplum Database support on Dell EMC DCA.
+Only Pivotal Greenplum Database is supported on DCA systems. Open source versions of Greenplum Database are not supported.
+
+Pivotal Greenplum 5.10.2 supports Data Domain Boost on Red Hat Enterprise Linux.
+Pivotal Greenplum 5.10.2 supports backup with Veritas NetBackup version 7.7.3. 
+
+由上可见，企业版和开源版功能是差不多，不过前者，就是服务更多，功能更全。
+建议在生产环境中，可以采用混用策略，即企业版和开源版并用。减少或压缩运维及采购成本。
+
+Greenplum Command Center用于监控系统性能指标、分析系统健康、管理执行管理任务（如start 、stop、恢复Greenplum等）
+它由data collection agent和Command Center等组件组成：
+
+Agent：安装在master及其他segment节点上，用于收集数据，包括查询、系统指标等。Master节点的agent轮询收集segment的agent数据，然后发送给Command Center Database。
+Command Center Database：存放agent收集的数据和指标，然后运算后通过web界面展现。它存放在Greenplum Database的gpperfmon库里。
+Greenplum Command Center Console：提供图形终端用于查看系统指标和性能。
+Greenplum Command Center Web Service：Greenplum Command Center Console通过web service框架来访问Command Center 数据库。使用的是Lighttpd服务器。
+
+  
+  
+
 --再谈谈Greenplum
 1. 支持列存，行存，混合存储。
 2. 支持扩展的外部数据源（如阿里云提供的极为廉价的OSS外部存储）。
@@ -77,6 +133,43 @@ grant USAGE on schema ttpai_boss_v1 to tableau;
  --将某个schema的表的权限批量赋权给某个用户(Postgre9.0以后的功能)
  grant select ,update ,delete on all tables in schema ttpai_boss_v1 to tableau;
 revoke select ,update ,delete on all tables in schema ttpai_boss_v1 from tableau;
+
+
+ALTER DEFAULT PRIVILEGES IN SCHEMA public grant ALL ON tables to db1_admin ;
+
+ALTER DEFAULT PRIVILEGES 
+    FOR ROLE some_role   -- Alternatively "FOR USER"
+    IN SCHEMA public
+    GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO user_name;
+这里,some_role是创建表的角色,而user_name是获取权限的角色.定义此项,您必须以some_role或其成员身份登录.
+
+--查看某个表有哪些用户有权限
+select relname,relacl from pg_class where relkind='r' and relname like 'BOSS_ACCOUNT'
+            r -- SELECT ("read")
+            w -- UPDATE ("write")
+            a -- INSERT ("append")
+            d -- DELETE
+            D -- TRUNCATE
+            x -- REFERENCES
+            t -- TRIGGER
+            X -- EXECUTE
+            U -- USAGE
+            C -- CREATE
+            c -- CONNECT
+            T -- TEMPORARY
+
+
+
+--回收某个用户的function权限
+ revoke all on FUNCTION grant_on_all_tables(text,text) from tableau;
+
+ --查看tableau用户是否具有 grant_on_all_tables 这个function的 execute权限
+ SELECT has_function_privilege('tableau', 'grant_on_all_tables(text, text)', 'execute');
+
+ 
+ --查看是否有某个schema
+ SELECT * FROM information_schema.schemata WHERE schema_name = 'ttpai_boss_v1'
+
  
 1、查看某用户的表权限
 select * from information_schema.table_privileges where grantee='user_name';
@@ -91,10 +184,13 @@ alter user user_name with CONNECTION LIMIT  20;#连接数限制
 
 如何查看schema的权限
  
- 
+
  --返回星期几
  select EXTRACT(dow FROM now())
 
+ 
+ --检查锁
+select * from pg_stat_activity where waiting_reason like 'lock'
  
  --gp杀某个连接 datname是数据库名
  SELECT procpid, pg_terminate_backend(procpid) 
@@ -120,11 +216,15 @@ ORDER BY dfsegment;
 select pg_size_pretty(pg_database_size('ttpai_boss_v1'));
 
 
---表占用空间 schema ttpai_boss_v1
+--schema中各个表占用空间 schema ttpai_boss_v1
 SELECT relname as name, sotdsize/1024/1024 as size_MB, sotdtoastsize as toast, sotdadditionalsize as other
 FROM gp_toolkit.gp_size_of_table_disk as sotd, pg_class
 WHERE sotd.sotdoid = pg_class.oid and sotd.sotdschemaname like 'ttpai_boss_v1'
 ORDER BY relname;
+
+--查看某个表的占用空间
+select pg_size_pretty(pg_relation_size('ttpai_boss_v1."BOSS_SIGNUP"')) size_MB;
+
  
 --索引占用空间
 SELECT soisize/1024/1024 as size_MB, relname as indexname
@@ -198,6 +298,8 @@ select * from gp_segment_configuration order by dbid
 show all 
 --查看某个参数的设置
 show max_connections;
+select * from pg_settings  where name like '%max_connection%';
+
 --查看数据文件存放目录  待做：查看gp数据文件存放文件在哪
 show data_directory 
 
@@ -216,7 +318,7 @@ gpconfig -r shared_buffers -v 1024MB
 命令     参数   作用 
 gpstate -b =》 显示简要状态
 gpstate -c =》 显示主镜像映射
-gpstart -d =》 指定数据目录（默认值：$MASTER_DATA_DIRECTORY）
+gpstate -d =》 指定数据目录（默认值：$MASTER_DATA_DIRECTORY）
 gpstate -e =》 显示具有镜像状态问题的片段
 gpstate -f =》 显示备用主机详细信息
 gpstate -i =》 显示GRIPLUM数据库版本
@@ -540,15 +642,9 @@ gpconfig -c gp_snmp_use_inform_or_trap -v trap --masteronly
 GP resource quene 资源队列
 gp_interconnect_type
 
---postgre数据库本地登录
-./bin/psql -h 127.0.0.1 -d postgres -U postgres -p 5432
-
---postgre重新加载配置文件
-pg_ctl reload -D /opt/websuite/postgre/postgresql_data/
 
 
-
-
+--GP dblink
 Greenplum dblink 弊端
 目前dblink与普通的用户自定义函数类似，并没有和Greenplum的MPP架构进行适配，它们会在master节点被调用，如果dblink返回的结果集较大，master很容易成为瓶颈。
 
@@ -582,3 +678,83 @@ Greenplum dblink 弊端
 2.3. 用户查询tbl_foreign_table_origin即为公共数据。
 
 3. 如果dblink获取的结果集较小，那么使用dblink作为临时的方案，来实现实例内跨库数据JOIN是没有太大问题的。
+
+
+--gpfdist开启服务
+gpfdist -d /tmp/gpfdist_data -p 8787 -l /tmp/gpfdist.log &
+
+--安装Postgis服务
+gppkg -i postgis-2.1.5+pivotal.1-gp5-rhel7-x86_64.gppkg
+
+
+--查看字段及字段类型
+select c.relname,a.attname,d.typname from pg_attribute a
+inner join pg_class c on a.attrelid = c.oid
+inner join pg_type d on a.atttypid=d.oid
+where c.relname like 'workflow%' 
+
+
+了解Greenplum主从复制的各个进程的作用以及原理
+查看Greenplum mirror down的时候，在相应的主机上的那些进程失败了
+
+
+--------------------------------处理jason---------------------------------------
+--Greenplum处理jason报错   ERROR:  invalid input syntax for type json 
+查询语句如下
+select id,autohome_id,create_time,update_time,remark,
+ remark::json->>'agegroup'  agegroup,
+ remark::json->>'brandName' brandName,
+ remark::json->>'cclid'  cclid,
+ remark::json->>'cityName'  cityName
+from ttpai_hezuo.HEZUO_AUTOHOME_REMARK 
+limit 20
+
+
+处理方式:新建function
+CREATE OR REPLACE FUNCTION is_json(input_text varchar) RETURNS boolean AS $$
+  DECLARE
+    maybe_json json;
+  BEGIN
+    BEGIN
+      maybe_json := input_text;
+    EXCEPTION WHEN others THEN
+      RETURN FALSE;
+    END;
+
+    RETURN TRUE;
+  END;
+$$ LANGUAGE plpgsql IMMUTABLE;
+
+或者function
+create or replace function is_json(text)
+returns boolean language plpgsql immutable as $$
+begin
+    perform $1::json;
+    return true;
+exception
+    when invalid_text_representation then 
+        return false;
+end $$;
+
+然后使用查询语句
+select id,autohome_id,create_time,update_time,remark,
+ remark::json->>'agegroup'  agegroup,
+ remark::json->>'brandName' brandName,
+ remark::json->>'cclid'  cclid,
+ remark::json->>'cityName'  cityName
+from ttpai_hezuo.HEZUO_AUTOHOME_REMARK 
+where is_json(remark) --两个function都可用
+limit 20
+
+网上说可以使用这种方式将不能转换jason的值设置为空，但是执行的时候报错了
+-- or this if you want to fill will NULLs
+SELECT
+  CASE
+    WHEN is_json(user_data)
+      THEN user_data::json #> '{user,name}'
+    ELSE
+      NULL
+  END
+FROM users;
+
+--------------------------------处理jason---------------------------------------

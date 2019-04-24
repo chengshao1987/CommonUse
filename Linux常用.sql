@@ -7,7 +7,8 @@ su master
 --切换用户并切换目录， su - 命令切换为超级用户
 su - gpadmin
 
-
+--查看本机ip
+ip a
 
 
 --查看当前目录
@@ -91,6 +92,9 @@ uname -a
 --Linux查看当前操作系统版本信息
 cat /proc/version 
 
+--查看redhat版本
+cat /etc/redhat-release
+
 --Linux查看cpu相关信息，包括型号、主频、内核信息等
 cat /proc/cpuinfo
 
@@ -106,6 +110,16 @@ cat /proc/cpuinfo |grep "cores"|uniq
  
 --4. 查看CPU的主频
 cat /proc/cpuinfo |grep MHz|uniq
+
+
+--查看内存大小
+ cat /proc/meminfo
+ 
+--查看防火墙状态
+service iptables status
+
+--查看selinux状态   Security Enhanced Linux    SELinux主要作用就是最大限度地减小系统中服务进程可访问的资源（最小权限原则）。
+/usr/sbin/sestatus -v 
 
 
 --sudo命令用来以其他身份来执行命令
@@ -165,11 +179,16 @@ cat /proc/cpuinfo |grep MHz|uniq
    --强制递归删除文件夹symmetric，并且不提示
    rm -rf symmetric
    
+   --查看有多少个磁盘及分区
+   fdisk -l
+   
    --df命令的功能是用来检查linux服务器的文件系统的磁盘空间占用情况。
    df -h
 
    --查看内存的方法
    cat /proc/meminfo  或者 更直观的查看内存的命令：free -m
+   
+   
    
    
    --查看gpdata下面所有文件占用空间
@@ -203,3 +222,21 @@ cat /proc/cpuinfo |grep MHz|uniq
 	
 	--查看日期和时间
 	date
+
+	--将文件用scp命令从172.16.2.15上面拷贝到10.10.4.81
+	scp MONITOR_GUAZI_EQUITMENT.txt root@10.10.4.81:/tmp/gpfdist_data
+	
+	
+	rsync用法
+	
+	--Vi 编辑器快捷键
+	gg 文件开头
+	G  文件末尾
+	yy 复制整行
+	p  粘贴
+	dd 删除整行
+	u  撤销上一次操作
+	
+	
+	--查看两个文件是否是一致的,使用md5sum命令查看计算出来的结果是否一致
+	md5sum DP_SUCCESS_KPI.txt
