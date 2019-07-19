@@ -52,7 +52,7 @@ SELECT table_name,table_rows FROM TABLES ORDER BY table_rows DESC
  
  
  --查看建表语句
-SHOW CREATE TABLE ttpai_boss_v1.ZONE_AROUND
+SHOW CREATE TABLE schemaname.tablename
 
 --查看安装目录
 show variables like "%char%";
@@ -63,8 +63,6 @@ show variables like "%char%";
 --查看指定库的指定表的大小
 select concat(round(sum(DATA_LENGTH/1024/1024),2),'MB') as data  from TABLES where table_schema='jishi' and table_name='a_ya';
 
---mysql dump出表结构
- mysqldump -h172.16.2.187 -uroot -pbbb -d  --ignore-table=ttpai_boss_v1.BOSS_RECEPTION_DEPART_V ttpai_boss_v1 >C:\Users\test\Downloads\boss.sql
  
  
  -- 以下代码是检测没有主键的表
